@@ -26,7 +26,7 @@ class SynologyException(Exception):
 
 class SynologyStorageMixin(models.Model):
     path = models.TextField(_('path'), null=True, blank=True, help_text='Path to Synology directory')
-    url = models.TextField(_('url'), null=True, blank=True, help_text='URL to the Synology NAS')
+    __url = models.TextField(_('url'), null=True, blank=True, help_text='URL to the Synology NAS')
     username = models.TextField(_('username'), null=True, blank=True, help_text='Username to the Synology NAS')
     password = models.TextField(_('password'), null=True, blank=True, help_text='Password to the Synology NAS')
     regex_filter = models.TextField(
@@ -35,6 +35,13 @@ class SynologyStorageMixin(models.Model):
     use_blob_urls = models.BooleanField(
         _('use_blob_urls'), default=False, help_text='Interpret objects as BLOBs and generate URLs'
     )
+
+    @property
+    def url(self) -> str | None:
+        if self.__url.endswith("/"):
+            self.__url[:-1]
+        else:
+            return self.__url
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
