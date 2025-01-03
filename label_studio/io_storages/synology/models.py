@@ -39,7 +39,7 @@ class SynologyStorageMixin(models.Model):
     @property
     def clean_url(self) -> str | None:
         if self.url.endswith("/"):
-            self.url[:-1]
+            return self.url[:-1]
         else:
             return self.url
 
