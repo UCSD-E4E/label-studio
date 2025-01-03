@@ -26,7 +26,7 @@ class SynologyException(Exception):
 
 class SynologyStorageMixin(models.Model):
     path = models.TextField(_('path'), null=True, blank=True, help_text='Path to Synology directory')
-    __url = models.TextField(_('url'), null=True, blank=True, help_text='URL to the Synology NAS')
+    url = models.TextField(_('url'), null=True, blank=True, help_text='URL to the Synology NAS')
     username = models.TextField(_('username'), null=True, blank=True, help_text='Username to the Synology NAS')
     password = models.TextField(_('password'), null=True, blank=True, help_text='Password to the Synology NAS')
     regex_filter = models.TextField(
@@ -37,11 +37,11 @@ class SynologyStorageMixin(models.Model):
     )
 
     @property
-    def url(self) -> str | None:
-        if self.__url.endswith("/"):
-            self.__url[:-1]
+    def clean_url(self) -> str | None:
+        if self.url.endswith("/"):
+            self.url[:-1]
         else:
-            return self.__url
+            return self.url
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,7 +50,7 @@ class SynologyStorageMixin(models.Model):
 
     def get_filestation(self) -> FileStation:
         if self.__filestation is None:
-            parsed_url = urlparse(self.url)
+            parsed_url = urlparse(self.clean_url)
 
             self.__filestation = FileStation(
                 parsed_url.hostname,
@@ -110,7 +110,7 @@ class SynologyImportStorage(SynologyStorageMixin, ProjectStorageMixin, ImportSto
     def get_data(self, key):
         if self.use_blob_urls:
             data_key = settings.DATA_UNDEFINED_NAME
-            return {data_key: f"{self.url}{key}"}
+            return {data_key: f"{self.clean_url}{key}"}
         
         filestation = self.get_filestation()
         bytes: io.BytesIO = filestation.get_file(key, "serve")
