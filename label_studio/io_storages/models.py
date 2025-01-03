@@ -26,6 +26,10 @@ from .redis.models import (  # noqa: F401
     RedisExportStorage,
     RedisExportStorageLink,
 )
+from .synology.models import (  # noqa: F401
+    SynologyImportStorage,
+    SynologyImportStorageLink
+)
 
 from label_studio.core.utils.common import load_func
 

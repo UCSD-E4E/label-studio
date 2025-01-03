@@ -8,6 +8,7 @@ from .azure_blob.api import AzureBlobExportStorageListAPI, AzureBlobImportStorag
 from .gcs.api import GCSExportStorageListAPI, GCSImportStorageListAPI
 from .redis.api import RedisExportStorageListAPI, RedisImportStorageListAPI
 from .s3.api import S3ExportStorageListAPI, S3ImportStorageListAPI
+from .synology.api import SynologyExportStorageListAPI, SynologyImportStorageListAPI
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,12 @@ def get_storage_list():
             'title': 'Redis',
             'import_list_api': RedisImportStorageListAPI,
             'export_list_api': RedisExportStorageListAPI,
+        },
+        {
+            'name': 'synology',
+            'title': 'Synology',
+            'import_list_api': SynologyImportStorageListAPI,
+            'export_list_api': SynologyExportStorageListAPI,
         },
     ]
 

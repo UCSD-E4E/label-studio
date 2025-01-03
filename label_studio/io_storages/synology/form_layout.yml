@@ -1,0 +1,52 @@
+redis_title: &synology_title
+  - type: text
+    name: title
+    label: Storage Title
+
+# 2x2 grid
+redis_params: &synology_params
+  - type: text
+    name: url
+    label: URL
+    placeholder: https://synology-nas:5001
+  - type: text
+    name: path
+    label: Path
+    placeholder: /label_studio
+  - type: text
+    name: username
+    label: Username
+    placeholder: label_studio
+  - type: password
+    name: password
+    label: Password
+    autoComplete: "new-password"
+
+ImportStorage:
+  # Title
+  - columnCount: 1
+    fields: *synology_title
+  # Path, Password, Host and Port
+  - columnCount: 2
+    fields: *synology_params
+  # Regex filter
+  - columnCount: 1
+    fields:
+      - type: text
+        name: regex_filter
+        label: File Filter Regex
+        placeholder: '.*csv or .*(jpe?g|png|tiff) or .\w+-\d+.text'
+        validators:
+          - regexp
+
+  # 2 columns grid
+  - columnCount: 1
+    fields:
+      - type: toggle
+        name: use_blob_urls
+        label: Treat every bucket object as a source file
+        description: If unchecked, treat every bucket object as a JSON-formatted task. Optional
+
+ExportStorage:
+  - columnCount: 2
+    fields: *synology_params

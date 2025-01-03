@@ -68,6 +68,19 @@ from io_storages.s3.api import (
     S3ImportStorageSyncAPI,
     S3ImportStorageValidateAPI,
 )
+from io_storages.synology.api import (
+    SynologyExportStorageDetailAPI,
+    SynologyExportStorageListAPI,
+    SynologyExportStorageFormLayoutAPI,
+    SynologyExportStorageSyncAPI,
+    SynologyExportStorageValidateAPI,
+    SynologyImportGetFileAPI,
+    SynologyImportStorageDetailAPI,
+    SynologyImportStorageListAPI,
+    SynologyImportStorageFormLayoutAPI,
+    SynologyImportStorageSyncAPI,
+    SynologyImportStorageValidateAPI,
+)
 
 app_name = 'storages'
 
@@ -122,6 +135,18 @@ _api_urlpatterns = [
     path('export/redis/<int:pk>/sync', RedisExportStorageSyncAPI.as_view(), name='export-storage-redis-sync'),
     path('export/redis/validate', RedisExportStorageValidateAPI.as_view(), name='export-storage-redis-validate'),
     path('export/redis/form', RedisExportStorageFormLayoutAPI.as_view(), name='export-storage-redis-form'),
+    # Synology
+    path('synology/', SynologyImportStorageListAPI.as_view(), name='storage-synology-list'),
+    path('synology/file', SynologyImportGetFileAPI.as_view(), name='storage-synology-file'),
+    path('synology/<int:pk>', SynologyImportStorageDetailAPI.as_view(), name='storage-synology-detail'),
+    path('synology/<int:pk>/sync', SynologyImportStorageSyncAPI.as_view(), name='storage-synology-sync'),
+    path('synology/validate', SynologyImportStorageValidateAPI.as_view(), name='storage-synology-validate'),
+    path('synology/form', SynologyImportStorageFormLayoutAPI.as_view(), name='storage-synology-form'),
+    path('export/synology', SynologyExportStorageListAPI.as_view(), name='export-storage-synology-list'),
+    path('export/synology/<int:pk>', SynologyExportStorageDetailAPI.as_view(), name='export-storage-synology-detail'),
+    path('export/synology/<int:pk>/sync', SynologyExportStorageSyncAPI.as_view(), name='export-storage-synology-sync'),
+    path('export/synology/validate', SynologyExportStorageValidateAPI.as_view(), name='export-storage-synology-validate'),
+    path('export/synology/form', SynologyExportStorageFormLayoutAPI.as_view(), name='export-storage-synology-form'),
 ]
 if settings.ENABLE_LOCAL_FILES_STORAGE:
     _api_urlpatterns += [
