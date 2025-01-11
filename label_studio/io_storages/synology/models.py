@@ -5,6 +5,7 @@ import re
 from itertools import chain
 from urllib.parse import quote, urlparse
 
+import validators
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -38,10 +39,9 @@ class SynologyStorageMixin(models.Model):
 
     @property
     def clean_url(self) -> str | None:
-        if self.url.endswith("/"):
-            return self.url[:-1]
-        else:
-            return self.url
+        parsed_url = urlparse(self.url)
+
+        return f"{parsed_url.scheme}://{parsed_url.hostname}:{parsed_url.port}"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,17 +63,31 @@ class SynologyStorageMixin(models.Model):
         return self.__filestation
     
     def validate_connection_bool(self):
-        filestation = self.get_filestation()
-
-        result = filestation.get_info()
-        return result["success"]
+        try:
+            # Throws an exception so we want to handle it.
+            self.validate_connection()
+            return True
+        except:
+            return False
 
     def validate_connection(self):
+        if isinstance(validators.url(self.url), validators.ValidationError):
+            raise ValidationError(f"URL is invalid.")
+        
+        parsed_url = urlparse(self.url)
+        
+        if isinstance(validators.hostname(parsed_url.hostname), validators.ValidationError):
+            raise ValidationError(f"Host name is invalid")
+
         filestation = self.get_filestation()
 
         result = filestation.get_info()
         if not result["success"]:
             raise ValidationError(f"FileStation.get_info() returned '{result}'.")
+        
+        result = filestation.get_file_info(self.path)
+        if not result["success"] or any("code" in f for f in result["data"]["files"]):
+            raise ValidationError(f"FileStation.get_file_info() returned '{result}.")
 
 class SynologyImportStorage(SynologyStorageMixin, ProjectStorageMixin, ImportStorage):
     def __get_files(self, path: str):
