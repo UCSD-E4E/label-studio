@@ -3,8 +3,9 @@ name: Docker Image CI
 on:
   push:
     branches: [ "develop" ]
-  pull_request:
-    branches: [ "develop" ]
+
+env:
+  IMAGE_NAME: ghcr.io/ucsd-e4e/label-studio
 
 jobs:
 
@@ -26,10 +27,54 @@ jobs:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Calculate version
+      id: version
+      env:
+        BRANCH_NAME: "develop"
+      run: |
+        set -x
+        sha="$(git rev-parse HEAD)"
+        echo "sha=$sha" >> $GITHUB_OUTPUT
+          
+        pretty_branch_name="$(echo -n "${BRANCH_NAME#refs/heads/}" | sed -E 's#[/_\.-]+#-#g' | tr '[:upper:]' '[:lower:]' | cut -c1-25 | sed -E 's#-$##g')"
+        echo "pretty_branch_name=${pretty_branch_name}" >> "${GITHUB_OUTPUT}"
+
+        regexp='^ls-release\/(.*)$';
+        if [[ "$BRANCH_NAME" =~ $regexp ]]; then
+          image_version="${BASH_REMATCH[1]}rc${sha}"
+        else
+          image_version="${pretty_branch_name}"
+        fi
+        echo "image_version=${image_version}" >> $GITHUB_OUTPUT
+        echo "ubi_image_version=ubi_${image_version}" >> $GITHUB_OUTPUT
+        
+        current_time="$(date +'%Y%m%d.%H%M%S')"
+        branch="-${pretty_branch_name}"
+        short_sha="$(git rev-parse --short HEAD)"
+        long_sha="$(git rev-parse HEAD)"
+        echo "sha=$long_sha" >> $GITHUB_OUTPUT
+        short_sha_length="$(echo $short_sha | awk '{print length}')"
+        current_time_length="$(echo $current_time | awk '{print length}')"
+        version="${current_time}$(echo $branch | cut -c1-$((50 - short_sha_length - current_time_length)))-${short_sha}"
+        echo "build_version=$version" >> $GITHUB_OUTPUT
+
+    - name: Extract Docker metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=${{ steps.version.outputs.image_version }}
+          type=raw,value=${{ steps.version.outputs.build_version }}
     -
       name: Build and push
       uses: docker/build-push-action@v6
       with:
         context: .
-        tags: ghcr.io/ucsd-e4e/label-studio
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
         push: true
+        build-args: |
+          BRANCH_OVERRIDE: "develop"
+          VERSION_OVERRIDE: ${{ steps.version.outputs.build_version }}
