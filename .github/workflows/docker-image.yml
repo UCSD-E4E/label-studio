@@ -2,7 +2,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "release-1.15.0" ]
 
 env:
   IMAGE_NAME: ghcr.io/ucsd-e4e/label-studio
