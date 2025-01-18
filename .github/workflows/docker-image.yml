@@ -11,12 +11,17 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-
     steps:
     - name: Delete huge unnecessary tools folder
       run: rm -rf /opt/hostedtoolcache
     - 
       uses: actions/checkout@v4
+
+    - name: Extract branch name
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
+
     -
       name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -31,7 +36,7 @@ jobs:
     - name: Calculate version
       id: version
       env:
-        BRANCH_NAME: "develop"
+        BRANCH_NAME: ${{ steps.extract_branch.outputs.branch }}
       run: |
         set -x
         sha="$(git rev-parse HEAD)"
@@ -76,5 +81,5 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
         push: true
         build-args: |
-          BRANCH_OVERRIDE: "develop"
+          BRANCH_OVERRIDE: ${{ steps.extract_branch.outputs.branch }}
           VERSION_OVERRIDE: ${{ steps.version.outputs.build_version }}
