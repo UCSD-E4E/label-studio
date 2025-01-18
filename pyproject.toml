@@ -201,6 +201,8 @@ django-csp = "3.7"
 openai = "^1.10.0"
 django-migration-linter = "^5.1.0"
 setuptools = ">=75.4.0"
+synology-api = "^0.7.3"
+validators = "^0.34.0"
 
 # Humansignal repo dependencies
 label-studio-sdk = "1.0.8"
