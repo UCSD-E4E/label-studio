@@ -119,12 +119,12 @@ class SynologyImportStorage(SynologyStorageMixin, ProjectStorageMixin, ImportSto
             if regex and not regex.match(key):
                 logger.debug(key + ' is skipped by regex filter')
                 continue
-            yield file["path"]
+            yield self.resolve_uri_interal(file["path"])
 
     def get_data(self, key):
         if self.use_blob_urls:
             data_key = settings.DATA_UNDEFINED_NAME
-            return {data_key: f"{self.clean_url}{key}"}
+            return {data_key: f"{key}"} #{self.clean_url}{key}
         
         filestation = self.get_filestation()
         bytes: io.BytesIO = filestation.get_file(key, "serve")
@@ -132,8 +132,10 @@ class SynologyImportStorage(SynologyStorageMixin, ProjectStorageMixin, ImportSto
         return json.loads(bytes.read())
     
     def resolve_uri(self, uri, task=None):
+        return uri
+
+    def resolve_uri_interal(self, uri, task=None):
         parse_url = urlparse(uri)
-        
         return f"{settings.HOSTNAME}/api/storages/synology/file?path={quote(parse_url.path)}&project={self.project.id}"
     
     def scan_and_create_links(self):
